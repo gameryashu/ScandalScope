@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { motion } from 'framer-motion';
+import React, { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   AlertTriangle, 
   Shield, 
@@ -10,15 +10,35 @@ import {
   TrendingUp,
   MessageSquare,
   Heart,
-  BarChart3
+  BarChart3,
+  Clock,
+  Target,
+  Zap
 } from 'lucide-react';
-import { useStore } from '../store/useStore';
-import { getRiskColor, getRiskBgColor } from '../utils/analysis';
+import { useCurrentAnalysis, useStore } from '@/store/useStore';
+import { getRiskColor, getRiskBgColor, getRiskGradient } from '@/utils/analysis';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { Progress } from '@/components/ui/Progress';
+import { Badge } from '@/components/ui/Badge';
+import { cn } from '@/utils/cn';
 import toast from 'react-hot-toast';
 import Confetti from 'react-confetti';
 
 export const AnalysisResult: React.FC = () => {
-  const { currentAnalysis, showConfetti, setShowConfetti } = useStore();
+  const currentAnalysis = useCurrentAnalysis();
+  const { showConfetti, setShowConfetti } = useStore();
+  const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
+
+  useEffect(() => {
+    const updateWindowSize = () => {
+      setWindowSize({ width: window.innerWidth, height: window.innerHeight });
+    };
+    
+    updateWindowSize();
+    window.addEventListener('resize', updateWindowSize);
+    return () => window.removeEventListener('resize', updateWindowSize);
+  }, []);
 
   useEffect(() => {
     if (currentAnalysis && currentAnalysis.riskLevel === 'SAFE') {
@@ -29,7 +49,17 @@ export const AnalysisResult: React.FC = () => {
 
   if (!currentAnalysis) return null;
 
-  const { cancelScore, riskLevel, roast, apology, categories, recommendations } = currentAnalysis;
+  const { 
+    cancelScore, 
+    riskLevel, 
+    roast, 
+    apology, 
+    categories, 
+    recommendations,
+    confidence,
+    processingTime,
+    timestamp
+  } = currentAnalysis;
 
   const copyToClipboard = (text: string, type: string) => {
     navigator.clipboard.writeText(text);
@@ -49,23 +79,48 @@ export const AnalysisResult: React.FC = () => {
     }
   };
 
+  const downloadResult = () => {
+    const data = {
+      score: cancelScore,
+      riskLevel,
+      roast,
+      categories,
+      timestamp: new Date(timestamp).toISOString(),
+    };
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `scandalscope-analysis-${Date.now()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const getRiskIcon = () => {
+    const iconClass = "h-8 w-8";
     switch (riskLevel) {
-      case 'SAFE': return <Shield className="h-8 w-8 text-success-400" />;
-      case 'MILD': return <TrendingUp className="h-8 w-8 text-accent-400" />;
-      case 'MODERATE': return <AlertTriangle className="h-8 w-8 text-warning-400" />;
-      case 'HIGH': return <Flame className="h-8 w-8 text-primary-400" />;
-      case 'EXTREME': return <Flame className="h-8 w-8 text-danger-400" />;
-      default: return <BarChart3 className="h-8 w-8 text-secondary-400" />;
+      case 'SAFE': return <Shield className={cn(iconClass, "text-emerald-400")} />;
+      case 'MILD': return <TrendingUp className={cn(iconClass, "text-yellow-400")} />;
+      case 'MODERATE': return <AlertTriangle className={cn(iconClass, "text-orange-400")} />;
+      case 'HIGH': return <Flame className={cn(iconClass, "text-red-400")} />;
+      case 'EXTREME': return <Flame className={cn(iconClass, "text-red-600 animate-pulse")} />;
+      default: return <BarChart3 className={cn(iconClass, "text-gray-400")} />;
     }
   };
 
   const getScoreColor = (score: number) => {
-    if (score < 20) return 'text-success-400';
-    if (score < 40) return 'text-accent-400';
-    if (score < 60) return 'text-warning-400';
-    if (score < 80) return 'text-primary-400';
-    return 'text-danger-400';
+    if (score < 20) return 'text-emerald-400';
+    if (score < 40) return 'text-yellow-400';
+    if (score < 60) return 'text-orange-400';
+    if (score < 80) return 'text-red-400';
+    return 'text-red-600';
+  };
+
+  const getProgressColor = (score: number): 'success' | 'warning' | 'danger' => {
+    if (score < 40) return 'success';
+    if (score < 70) return 'warning';
+    return 'danger';
   };
 
   return (
@@ -76,204 +131,232 @@ export const AnalysisResult: React.FC = () => {
     >
       {showConfetti && (
         <Confetti
-          width={window.innerWidth}
-          height={window.innerHeight}
+          width={windowSize.width}
+          height={windowSize.height}
           recycle={false}
           numberOfPieces={200}
+          gravity={0.3}
         />
       )}
 
       {/* Main Score Card */}
-      <motion.div
-        className={`card ${getRiskBgColor(riskLevel)} border-2 ${
-          riskLevel === 'EXTREME' ? 'border-danger-500 animate-pulse-glow' : 
-          riskLevel === 'HIGH' ? 'border-primary-500' :
-          riskLevel === 'MODERATE' ? 'border-warning-500' :
-          riskLevel === 'MILD' ? 'border-accent-500' :
-          'border-success-500'
-        }`}
-        initial={{ scale: 0.9 }}
-        animate={{ scale: 1 }}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      <Card 
+        className={cn(
+          "text-center relative overflow-hidden",
+          `bg-gradient-to-br ${getRiskGradient(riskLevel)}`,
+          riskLevel === 'EXTREME' && "animate-pulse border-red-500/50"
+        )}
+        gradient
       >
-        <div className="text-center">
+        {/* Animated Background */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-red-500/20 animate-gradient-x" />
+        </div>
+
+        <div className="relative z-10">
+          {/* Risk Icon */}
           <motion.div
-            className="flex items-center justify-center mb-4"
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
+            className="flex items-center justify-center mb-6"
+            initial={{ scale: 0, rotate: -180 }}
+            animate={{ scale: 1, rotate: 0 }}
             transition={{ delay: 0.2, type: "spring", stiffness: 300 }}
           >
             {getRiskIcon()}
           </motion.div>
           
+          {/* Score Display */}
           <motion.div
-            className={`text-6xl font-bold mb-2 ${getScoreColor(cancelScore)}`}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
+            className={cn("text-7xl font-bold mb-4", getScoreColor(cancelScore))}
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
           >
             {cancelScore}
           </motion.div>
           
-          <div className="text-2xl font-semibold text-white mb-2">
+          <div className="text-2xl font-semibold text-white mb-4">
             Cancel Risk Score
           </div>
           
+          {/* Risk Level Badge */}
           <motion.div
-            className={`inline-block px-4 py-2 rounded-full text-sm font-bold ${getRiskBgColor(riskLevel)} ${getRiskColor(riskLevel)}`}
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.4, type: "spring" }}
+            className="mb-6"
           >
-            {riskLevel} RISK
+            <Badge 
+              variant={riskLevel === 'SAFE' ? 'success' : riskLevel === 'EXTREME' ? 'danger' : 'warning'}
+              size="lg"
+              className="text-lg font-bold px-6 py-2"
+            >
+              {riskLevel} RISK
+            </Badge>
           </motion.div>
-        </div>
 
-        {/* Action Buttons */}
-        <div className="flex flex-wrap gap-3 mt-6 justify-center">
-          <motion.button
-            onClick={shareResult}
-            className="btn-secondary flex items-center space-x-2"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <Share2 className="h-4 w-4" />
-            <span>Share</span>
-          </motion.button>
-          
-          <motion.button
-            onClick={() => copyToClipboard(`Cancel Risk Score: ${cancelScore}/100 (${riskLevel})`, 'Score')}
-            className="btn-secondary flex items-center space-x-2"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <Copy className="h-4 w-4" />
-            <span>Copy Score</span>
-          </motion.button>
+          {/* Confidence & Processing Time */}
+          <div className="flex justify-center space-x-6 mb-6 text-sm text-gray-400">
+            <div className="flex items-center space-x-1">
+              <Target className="h-4 w-4" />
+              <span>{Math.round(confidence * 100)}% confidence</span>
+            </div>
+            <div className="flex items-center space-x-1">
+              <Clock className="h-4 w-4" />
+              <span>{processingTime}ms</span>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-wrap gap-3 justify-center">
+            <Button
+              onClick={shareResult}
+              variant="secondary"
+              className="flex items-center space-x-2"
+            >
+              <Share2 className="h-4 w-4" />
+              <span>Share</span>
+            </Button>
+            
+            <Button
+              onClick={() => copyToClipboard(`Cancel Risk Score: ${cancelScore}/100 (${riskLevel})`, 'Score')}
+              variant="secondary"
+              className="flex items-center space-x-2"
+            >
+              <Copy className="h-4 w-4" />
+              <span>Copy Score</span>
+            </Button>
+
+            <Button
+              onClick={downloadResult}
+              variant="ghost"
+              className="flex items-center space-x-2"
+            >
+              <Download className="h-4 w-4" />
+              <span>Download</span>
+            </Button>
+          </div>
         </div>
-      </motion.div>
+      </Card>
 
       {/* Roast Section */}
-      <motion.div
-        className="card"
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 0.5 }}
-      >
-        <div className="flex items-start space-x-3">
-          <div className="p-2 bg-primary-500/20 rounded-lg">
-            <Flame className="h-5 w-5 text-primary-400" />
+      <Card className="relative overflow-hidden">
+        <div className="flex items-start space-x-4">
+          <div className="p-3 bg-gradient-to-br from-red-500/20 to-orange-500/20 rounded-xl">
+            <Flame className="h-6 w-6 text-red-400" />
           </div>
           <div className="flex-1">
-            <h3 className="text-lg font-semibold text-white mb-2">The Roast 🔥</h3>
-            <p className="text-secondary-200 leading-relaxed">{roast}</p>
-            <motion.button
-              onClick={() => copyToClipboard(roast, 'Roast')}
-              className="mt-3 text-sm text-primary-400 hover:text-primary-300 flex items-center space-x-1"
-              whileHover={{ scale: 1.05 }}
+            <h3 className="text-xl font-semibold text-white mb-3 flex items-center">
+              The Roast 
+              <Zap className="h-5 w-5 text-yellow-400 ml-2" />
+            </h3>
+            <motion.p 
+              className="text-gray-200 leading-relaxed text-lg mb-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
             >
-              <Copy className="h-3 w-3" />
-              <span>Copy roast</span>
-            </motion.button>
+              {roast}
+            </motion.p>
+            <Button
+              onClick={() => copyToClipboard(roast, 'Roast')}
+              variant="ghost"
+              size="sm"
+              className="text-red-400 hover:text-red-300"
+            >
+              <Copy className="h-3 w-3 mr-1" />
+              Copy roast
+            </Button>
           </div>
         </div>
-      </motion.div>
+      </Card>
 
       {/* Categories Breakdown */}
-      <motion.div
-        className="card"
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 0.6 }}
-      >
-        <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-          <BarChart3 className="h-5 w-5 text-accent-400 mr-2" />
+      <Card>
+        <h3 className="text-xl font-semibold text-white mb-6 flex items-center">
+          <BarChart3 className="h-6 w-6 text-purple-400 mr-3" />
           Risk Breakdown
         </h3>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {Object.entries(categories).map(([category, score], index) => (
             <motion.div
               key={category}
-              className="bg-secondary-700/30 rounded-lg p-3"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
+              className="space-y-2"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.7 + index * 0.1 }}
             >
-              <div className="text-sm text-secondary-300 capitalize mb-1">
-                {category.replace('_', ' ')}
-              </div>
-              <div className="flex items-center space-x-2">
-                <div className="flex-1 bg-secondary-600 rounded-full h-2">
-                  <motion.div
-                    className={`h-2 rounded-full ${getScoreColor(score)}`}
-                    style={{ backgroundColor: `hsl(${120 - score * 1.2}, 70%, 50%)` }}
-                    initial={{ width: 0 }}
-                    animate={{ width: `${score}%` }}
-                    transition={{ delay: 0.8 + index * 0.1, duration: 0.8 }}
-                  />
-                </div>
-                <span className="text-sm font-medium text-white">
-                  {Math.round(score)}%
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium text-gray-300 capitalize">
+                  {category.replace('_', ' ')}
                 </span>
+                <Badge 
+                  variant={score > 70 ? 'danger' : score > 40 ? 'warning' : 'success'}
+                  size="sm"
+                >
+                  {Math.round(score)}%
+                </Badge>
               </div>
+              <Progress
+                value={score}
+                color={getProgressColor(score)}
+                className="h-2"
+              />
             </motion.div>
           ))}
         </div>
-      </motion.div>
+      </Card>
 
       {/* Recommendations */}
-      <motion.div
-        className="card"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.8 }}
-      >
-        <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-          <MessageSquare className="h-5 w-5 text-success-400 mr-2" />
+      <Card>
+        <h3 className="text-xl font-semibold text-white mb-6 flex items-center">
+          <MessageSquare className="h-6 w-6 text-emerald-400 mr-3" />
           Recommendations
         </h3>
-        <div className="space-y-2">
+        <div className="space-y-3">
           {recommendations.map((rec, index) => (
             <motion.div
               key={index}
-              className="flex items-center space-x-3 p-3 bg-secondary-700/30 rounded-lg"
+              className="flex items-start space-x-3 p-4 bg-gray-800/30 rounded-lg border border-gray-700/50"
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.9 + index * 0.1 }}
             >
-              <div className="w-2 h-2 bg-success-400 rounded-full" />
-              <span className="text-secondary-200">{rec}</span>
+              <div className="w-2 h-2 bg-emerald-400 rounded-full mt-2 flex-shrink-0" />
+              <span className="text-gray-200 leading-relaxed">{rec}</span>
             </motion.div>
           ))}
         </div>
-      </motion.div>
+      </Card>
 
-      {/* Apology Generator */}
-      {cancelScore > 50 && (
-        <motion.div
-          className="card bg-warning-500/10 border border-warning-500/30"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1 }}
-        >
-          <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
-            <Heart className="h-5 w-5 text-warning-400 mr-2" />
-            Emergency Apology Generator
-          </h3>
-          <div className="bg-secondary-700/30 rounded-lg p-4 mb-4">
-            <p className="text-secondary-200 italic leading-relaxed">"{apology}"</p>
-          </div>
-          <motion.button
-            onClick={() => copyToClipboard(apology, 'Apology')}
-            className="btn-secondary flex items-center space-x-2"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+      {/* Emergency Apology Generator */}
+      <AnimatePresence>
+        {cancelScore > 50 && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ delay: 1 }}
           >
-            <Copy className="h-4 w-4" />
-            <span>Copy Apology</span>
-          </motion.button>
-        </motion.div>
-      )}
+            <Card className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border-yellow-500/30">
+              <h3 className="text-xl font-semibold text-white mb-4 flex items-center">
+                <Heart className="h-6 w-6 text-yellow-400 mr-3" />
+                Emergency Apology Generator
+              </h3>
+              <div className="bg-gray-800/50 rounded-lg p-4 mb-4 border border-gray-700/50">
+                <p className="text-gray-200 italic leading-relaxed">"{apology}"</p>
+              </div>
+              <Button
+                onClick={() => copyToClipboard(apology, 'Apology')}
+                variant="secondary"
+                className="flex items-center space-x-2"
+              >
+                <Copy className="h-4 w-4" />
+                <span>Copy Apology</span>
+              </Button>
+            </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };
