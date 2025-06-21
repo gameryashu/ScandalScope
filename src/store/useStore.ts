@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
-import { persist } from 'zustand/middleware/persist';
+import { persist } from 'zustand/middleware';
 import type { 
   AnalysisResult, 
   User, 
