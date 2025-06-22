@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Flame, Moon, Sun, User, Trophy, History } from 'lucide-react';
-import { useStore } from '../store/useStore';
+import { useStore } from '@/store/useStore';
 
 interface HeaderProps {
   currentView: string;
@@ -31,16 +31,16 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView }) =
             whileTap={{ scale: 0.95 }}
           >
             <div className="relative">
-              <Flame className="h-8 w-8 text-primary-500" />
+              <Flame className="h-8 w-8 text-purple-500" />
               <motion.div
-                className="absolute inset-0 bg-primary-500 rounded-full blur-md opacity-30"
+                className="absolute inset-0 bg-purple-500 rounded-full blur-md opacity-30"
                 animate={{ scale: [1, 1.2, 1] }}
                 transition={{ duration: 2, repeat: Infinity }}
               />
             </div>
             <div>
               <h1 className="text-xl font-bold gradient-text">ScandalScope</h1>
-              <p className="text-xs text-secondary-400 -mt-1">Cancel Risk Analyzer</p>
+              <p className="text-xs text-gray-400 -mt-1">Cancel Risk Analyzer</p>
             </div>
           </motion.div>
 
@@ -56,8 +56,8 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView }) =
                 onClick={() => setCurrentView(id)}
                 className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-300 ${
                   currentView === id
-                    ? 'bg-primary-500/20 text-primary-400'
-                    : 'text-secondary-300 hover:text-white hover:bg-secondary-700/50'
+                    ? 'bg-purple-500/20 text-purple-400'
+                    : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
                 }`}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
@@ -73,21 +73,21 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView }) =
             {/* Theme Toggle */}
             <motion.button
               onClick={toggleTheme}
-              className="p-2 rounded-lg bg-secondary-700/50 hover:bg-secondary-600/50 transition-colors"
+              className="p-2 rounded-lg bg-gray-700/50 hover:bg-gray-600/50 transition-colors"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
             >
               {theme === 'dark' ? (
-                <Sun className="h-5 w-5 text-accent-400" />
+                <Sun className="h-5 w-5 text-yellow-400" />
               ) : (
-                <Moon className="h-5 w-5 text-secondary-400" />
+                <Moon className="h-5 w-5 text-gray-400" />
               )}
             </motion.button>
 
             {/* User Profile */}
             {user ? (
               <motion.div 
-                className="flex items-center space-x-3 bg-secondary-700/50 rounded-lg px-3 py-2"
+                className="flex items-center space-x-3 bg-gray-700/50 rounded-lg px-3 py-2"
                 whileHover={{ scale: 1.05 }}
               >
                 <img 
@@ -97,13 +97,13 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView }) =
                 />
                 <div className="hidden sm:block">
                   <p className="text-sm font-medium text-white">{user.username}</p>
-                  <p className="text-xs text-secondary-400">Score: {user.averageScore}</p>
+                  <p className="text-xs text-gray-400">Score: {user.averageScore}</p>
                 </div>
               </motion.div>
             ) : (
               <motion.button
                 onClick={() => setCurrentView('profile')}
-                className="flex items-center space-x-2 bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg transition-colors"
+                className="flex items-center space-x-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
