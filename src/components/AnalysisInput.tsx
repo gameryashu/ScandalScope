@@ -6,6 +6,7 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
+import { RoastGenerator } from '@/components/RoastGenerator';
 import { cn } from '@/utils/cn';
 import { useStore } from '@/store/useStore';
 
@@ -13,6 +14,7 @@ export const AnalysisInput: React.FC = () => {
   const [text, setText] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+  const [showRoastGenerator, setShowRoastGenerator] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   
@@ -85,7 +87,7 @@ export const AnalysisInput: React.FC = () => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="w-full max-w-4xl mx-auto"
+      className="w-full max-w-4xl mx-auto space-y-6"
     >
       <Card gradient className="relative overflow-hidden">
         {/* Header */}
@@ -190,6 +192,16 @@ export const AnalysisInput: React.FC = () => {
               )}
             </Button>
 
+            {/* Roast Generator Toggle */}
+            <Button
+              onClick={() => setShowRoastGenerator(!showRoastGenerator)}
+              variant={showRoastGenerator ? "primary" : "secondary"}
+              disabled={!isValid}
+            >
+              <Zap className="h-5 w-5 mr-2" />
+              {showRoastGenerator ? 'Hide Roaster' : 'Get Roasted'}
+            </Button>
+
             {/* File Upload Button */}
             <Button
               variant="secondary"
@@ -288,6 +300,20 @@ export const AnalysisInput: React.FC = () => {
           className="hidden"
         />
       </Card>
+
+      {/* Roast Generator */}
+      <AnimatePresence>
+        {showRoastGenerator && isValid && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <RoastGenerator text={text} />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };
