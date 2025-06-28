@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Flame, Moon, Sun, User, Trophy, History, Menu, X } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { Button } from '@/components/ui/Button';
-import { cn } from '@/utils/cn';
+import { cn } from '@/lib/utils';
 
 interface HeaderProps {
   currentView: string;

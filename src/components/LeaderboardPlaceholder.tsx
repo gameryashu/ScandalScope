@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Trophy, Medal, Award, TrendingUp, Flame, Users } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
-import { cn } from '@/utils/cn';
+import { cn } from '@/lib/utils';
 
 interface LeaderboardEntry {
   id: string;

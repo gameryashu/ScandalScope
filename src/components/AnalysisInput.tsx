@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { RoastGenerator } from '@/components/RoastGenerator';
-import { cn } from '@/utils/cn';
+import { cn } from '@/lib/utils';
 import { useStore } from '@/store/useStore';
 
 export const AnalysisInput: React.FC = () => {

@@ -25,7 +25,7 @@ import { Badge } from '@/components/ui/Badge';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useAnalysis } from '@/hooks/useAnalysis';
 import { useToast } from '@/hooks/useToast';
-import { cn } from '@/utils/cn';
+import { cn } from '@/lib/utils';
 import Confetti from 'react-confetti';
 
 export const AnalysisResult: React.FC = () => {

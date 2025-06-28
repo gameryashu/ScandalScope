@@ -12,6 +12,7 @@ export default defineConfig({
       '@/store': resolve(__dirname, './src/store'),
       '@/types': resolve(__dirname, './src/types'),
       '@/hooks': resolve(__dirname, './src/hooks'),
+      '@/lib': resolve(__dirname, './src/lib'),
     },
   },
   optimizeDeps: {
