@@ -232,8 +232,8 @@ export function generateRoastTags(content: string, mode: RoastMode): string[] {
     tags.push('critical');
   }
   
-  // Content type
-  if (/[😀-🿿]/.test(content)) {
+  // Content type - Fixed emoji detection regex
+  if (/\p{Emoji}/u.test(content)) {
     tags.push('emoji');
   }
   
