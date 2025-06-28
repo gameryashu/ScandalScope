@@ -9,7 +9,7 @@ lerna-debug.log*
 # Build outputs
 dist/
 build/
-*.local
+*.tsbuildinfo
 
 # Environment variables
 .env
@@ -47,8 +47,6 @@ pids/
 # Coverage directory used by tools like istanbul
 coverage/
 *.lcov
-
-# nyc test coverage
 .nyc_output/
 
 # Dependency directories
@@ -84,7 +82,6 @@ jspm_packages/
 
 # Nuxt.js build / generate output
 .nuxt
-dist
 
 # Storybook build outputs
 .out
@@ -102,20 +99,38 @@ test-results/
 playwright-report/
 playwright/.cache/
 
-# Lighthouse
+# Lighthouse CI
 .lighthouseci/
 
 # Local development
 .env.development
-.env.staging
 
 # Test artifacts
 coverage/
 test-results/
 playwright-report/
 
-# Build artifacts
+# Backup files
+*.backup
+*.bak
+
+# Archive files
+*.zip
+*.tar.gz
+*.rar
+
+# Compiled binary addons
+build/Release
+
+# TypeScript cache
 *.tsbuildinfo
 
-# Sentry
-.sentryclirc
+# Optional stylelint cache
+.stylelintcache
+
+# SvelteKit build / generate output
+.svelte-kit
+
+# Vite
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*

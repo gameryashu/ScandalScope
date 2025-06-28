@@ -7,6 +7,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-20232A?logo=react&logoColor=61DAFB)](https://reactjs.org/)
 [![Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black)](https://vercel.com/)
+[![Tests](https://github.com/YOUR_USERNAME/ScandalScope/workflows/Tests/badge.svg)](https://github.com/YOUR_USERNAME/ScandalScope/actions)
 
 ## 🎯 What is ScandalScope?
 
