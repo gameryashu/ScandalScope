@@ -1,0 +1,39 @@
+{
+  "name": "ScandalScope - Cancel Risk Analyzer",
+  "short_name": "ScandalScope",
+  "description": "AI-powered social media post analyzer that predicts cancel risk before you hit send",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#111827",
+  "theme_color": "#8b5cf6",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/scandal-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/scandal-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "social", "utilities"],
+  "screenshots": [
+    {
+      "src": "/screenshot-desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    },
+    {
+      "src": "/screenshot-mobile.png",
+      "sizes": "375x812",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ]
+}
