@@ -13,7 +13,8 @@ import {
   BarChart3,
   Clock,
   Target,
-  Zap
+  Zap,
+  RefreshCw
 } from 'lucide-react';
 import { useCurrentAnalysis, useStore } from '@/store/useStore';
 import { getRiskColor, getRiskBgColor, getRiskGradient } from '@/utils/analysis';
@@ -21,14 +22,19 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Progress } from '@/components/ui/Progress';
 import { Badge } from '@/components/ui/Badge';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { useAnalysis } from '@/hooks/useAnalysis';
+import { useToast } from '@/hooks/useToast';
 import { cn } from '@/utils/cn';
-import toast from 'react-hot-toast';
 import Confetti from 'react-confetti';
 
 export const AnalysisResult: React.FC = () => {
   const currentAnalysis = useCurrentAnalysis();
   const { showConfetti, setShowConfetti } = useStore();
+  const { analyze } = useAnalysis();
+  const { success: showSuccess, error: showError } = useToast();
   const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
+  const [isRegenerating, setIsRegenerating] = useState(false);
 
   useEffect(() => {
     const updateWindowSize = () => {
@@ -58,24 +64,34 @@ export const AnalysisResult: React.FC = () => {
     recommendations,
     confidence,
     processingTime,
-    timestamp
+    timestamp,
+    text
   } = currentAnalysis;
 
-  const copyToClipboard = (text: string, type: string) => {
-    navigator.clipboard.writeText(text);
-    toast.success(`${type} copied to clipboard!`);
+  const copyToClipboard = async (text: string, type: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      showSuccess(`${type} copied to clipboard!`);
+    } catch (error) {
+      showError('Failed to copy to clipboard');
+    }
   };
 
-  const shareResult = () => {
+  const shareResult = async () => {
     const shareText = `I just got a ${cancelScore}/100 cancel risk score on ScandalScope! 🔥 ${roast}`;
+    
     if (navigator.share) {
-      navigator.share({
-        title: 'My ScandalScope Result',
-        text: shareText,
-        url: window.location.href,
-      });
+      try {
+        await navigator.share({
+          title: 'My ScandalScope Result',
+          text: shareText,
+          url: window.location.href,
+        });
+      } catch (error) {
+        await copyToClipboard(shareText, 'Share text');
+      }
     } else {
-      copyToClipboard(shareText, 'Share text');
+      await copyToClipboard(shareText, 'Share text');
     }
   };
 
@@ -86,6 +102,10 @@ export const AnalysisResult: React.FC = () => {
       roast,
       categories,
       timestamp: new Date(timestamp).toISOString(),
+      originalText: text,
+      recommendations,
+      confidence,
+      processingTime,
     };
     
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -95,6 +115,22 @@ export const AnalysisResult: React.FC = () => {
     a.download = `scandalscope-analysis-${Date.now()}.json`;
     a.click();
     URL.revokeObjectURL(url);
+    
+    showSuccess('Analysis downloaded successfully!');
+  };
+
+  const handleTryAgain = async () => {
+    if (!text) return;
+    
+    setIsRegenerating(true);
+    try {
+      await analyze(text);
+      showSuccess('Analysis regenerated!');
+    } catch (error) {
+      showError('Failed to regenerate analysis');
+    } finally {
+      setIsRegenerating(false);
+    }
   };
 
   const getRiskIcon = () => {
@@ -128,6 +164,7 @@ export const AnalysisResult: React.FC = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className="w-full max-w-4xl mx-auto space-y-6"
+      data-testid="analysis-result"
     >
       {showConfetti && (
         <Confetti
@@ -170,6 +207,7 @@ export const AnalysisResult: React.FC = () => {
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
+            data-testid="cancel-score"
           >
             {cancelScore}
           </motion.div>
@@ -209,6 +247,20 @@ export const AnalysisResult: React.FC = () => {
           {/* Action Buttons */}
           <div className="flex flex-wrap gap-3 justify-center">
             <Button
+              onClick={handleTryAgain}
+              disabled={isRegenerating}
+              variant="primary"
+              className="flex items-center space-x-2"
+            >
+              {isRegenerating ? (
+                <LoadingSpinner size="sm" />
+              ) : (
+                <RefreshCw className="h-4 w-4" />
+              )}
+              <span>Try Again</span>
+            </Button>
+
+            <Button
               onClick={shareResult}
               variant="secondary"
               className="flex items-center space-x-2"
@@ -239,7 +291,7 @@ export const AnalysisResult: React.FC = () => {
       </Card>
 
       {/* Roast Section */}
-      <Card className="relative overflow-hidden">
+      <Card className="relative overflow-hidden" data-testid="roast-content">
         <div className="flex items-start space-x-4">
           <div className="p-3 bg-gradient-to-br from-red-500/20 to-orange-500/20 rounded-xl">
             <Flame className="h-6 w-6 text-red-400" />

@@ -1,7 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Flame, Moon, Sun, User, Trophy, History } from 'lucide-react';
+import { Flame, Moon, Sun, User, Trophy, History, Menu, X } from 'lucide-react';
 import { useStore } from '@/store/useStore';
+import { Button } from '@/components/ui/Button';
 
 interface HeaderProps {
   currentView: string;
@@ -9,10 +10,22 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView }) => {
-  const { theme, setTheme, user } = useStore();
+  const { theme, setTheme, user, sidebarOpen, toggleSidebar } = useStore();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
   const toggleTheme = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
+  };
+
+  const navigationItems = [
+    { id: 'home', label: 'Analyze', icon: Flame },
+    { id: 'leaderboard', label: 'Leaderboard', icon: Trophy },
+    { id: 'history', label: 'History', icon: History },
+  ];
+
+  const handleNavClick = (viewId: string) => {
+    setCurrentView(viewId);
+    setIsMobileMenuOpen(false);
   };
 
   return (
@@ -26,7 +39,7 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView }) =
           {/* Logo */}
           <motion.div 
             className="flex items-center space-x-3 cursor-pointer"
-            onClick={() => setCurrentView('home')}
+            onClick={() => handleNavClick('home')}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -44,21 +57,18 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView }) =
             </div>
           </motion.div>
 
-          {/* Navigation */}
+          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            {[
-              { id: 'home', label: 'Analyze', icon: Flame },
-              { id: 'leaderboard', label: 'Leaderboard', icon: Trophy },
-              { id: 'history', label: 'History', icon: History },
-            ].map(({ id, label, icon: Icon }) => (
+            {navigationItems.map(({ id, label, icon: Icon }) => (
               <motion.button
                 key={id}
-                onClick={() => setCurrentView(id)}
-                className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-300 ${
+                onClick={() => handleNavClick(id)}
+                className={cn(
+                  'flex items-center space-x-2 px-3 py-2 rounded-lg transition-all duration-300',
                   currentView === id
                     ? 'bg-purple-500/20 text-purple-400'
                     : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
-                }`}
+                )}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -76,6 +86,7 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView }) =
               className="p-2 rounded-lg bg-gray-700/50 hover:bg-gray-600/50 transition-colors"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
+              aria-label="Toggle theme"
             >
               {theme === 'dark' ? (
                 <Sun className="h-5 w-5 text-yellow-400" />
@@ -87,7 +98,7 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView }) =
             {/* User Profile */}
             {user ? (
               <motion.div 
-                className="flex items-center space-x-3 bg-gray-700/50 rounded-lg px-3 py-2"
+                className="hidden sm:flex items-center space-x-3 bg-gray-700/50 rounded-lg px-3 py-2"
                 whileHover={{ scale: 1.05 }}
               >
                 <img 
@@ -95,24 +106,84 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView }) =
                   alt={user.username}
                   className="h-8 w-8 rounded-full"
                 />
-                <div className="hidden sm:block">
+                <div>
                   <p className="text-sm font-medium text-white">{user.username}</p>
                   <p className="text-xs text-gray-400">Score: {user.averageScore}</p>
                 </div>
               </motion.div>
             ) : (
-              <motion.button
+              <Button
                 onClick={() => setCurrentView('profile')}
-                className="flex items-center space-x-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                variant="primary"
+                size="sm"
+                className="hidden sm:flex items-center space-x-2"
               >
                 <User className="h-4 w-4" />
-                <span className="hidden sm:inline">Sign In</span>
+                <span>Sign In</span>
+              </Button>
+            )}
+
+            {/* Mobile Menu Toggle */}
+            <motion.button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="md:hidden p-2 rounded-lg bg-gray-700/50 hover:bg-gray-600/50 transition-colors"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              aria-label="Toggle mobile menu"
+              data-testid="mobile-header"
+            >
+              {isMobileMenuOpen ? (
+                <X className="h-5 w-5 text-gray-300" />
+              ) : (
+                <Menu className="h-5 w-5 text-gray-300" />
+              )}
+            </motion.button>
+          </div>
+        </div>
+
+        {/* Mobile Navigation */}
+        <motion.div
+          initial={false}
+          animate={{
+            height: isMobileMenuOpen ? 'auto' : 0,
+            opacity: isMobileMenuOpen ? 1 : 0,
+          }}
+          transition={{ duration: 0.3 }}
+          className="md:hidden overflow-hidden"
+        >
+          <div className="py-4 space-y-2 border-t border-gray-700/50">
+            {navigationItems.map(({ id, label, icon: Icon }) => (
+              <motion.button
+                key={id}
+                onClick={() => handleNavClick(id)}
+                className={cn(
+                  'w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-300',
+                  currentView === id
+                    ? 'bg-purple-500/20 text-purple-400'
+                    : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
+                )}
+                whileHover={{ x: 4 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <Icon className="h-5 w-5" />
+                <span className="font-medium">{label}</span>
+              </motion.button>
+            ))}
+            
+            {/* Mobile User Section */}
+            {!user && (
+              <motion.button
+                onClick={() => handleNavClick('profile')}
+                className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-300 hover:text-white hover:bg-gray-700/50 transition-all duration-300"
+                whileHover={{ x: 4 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <User className="h-5 w-5" />
+                <span className="font-medium">Sign In</span>
               </motion.button>
             )}
           </div>
-        </div>
+        </motion.div>
       </div>
     </motion.header>
   );

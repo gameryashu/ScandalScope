@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Toaster } from 'react-hot-toast';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Header } from '@/components/Header';
 import { AnalysisInput } from '@/components/AnalysisInput';
@@ -8,12 +7,16 @@ import { AnalysisResult } from '@/components/AnalysisResult';
 import { Leaderboard } from '@/components/Leaderboard';
 import { History } from '@/components/History';
 import { Footer } from '@/components/Footer';
+import { ToastContainer } from '@/components/ui/Toast';
 import { useStore, useCurrentAnalysis, useTheme } from '@/store/useStore';
+import { useToast } from '@/hooks/useToast';
+import { ScreenReader } from '@/utils/accessibility';
 
 function App() {
   const [currentView, setCurrentView] = React.useState('home');
   const currentAnalysis = useCurrentAnalysis();
   const theme = useTheme();
+  const { toasts, removeToast } = useToast();
 
   useEffect(() => {
     // Apply theme to document
@@ -28,6 +31,17 @@ function App() {
       root.classList.toggle('dark', prefersDark);
     }
   }, [theme]);
+
+  // Announce view changes to screen readers
+  useEffect(() => {
+    const viewNames = {
+      home: 'Analysis page',
+      leaderboard: 'Leaderboard page',
+      history: 'History page',
+    };
+    
+    ScreenReader.announce(`Navigated to ${viewNames[currentView as keyof typeof viewNames] || currentView}`);
+  }, [currentView]);
 
   const renderContent = () => {
     switch (currentView) {
@@ -102,7 +116,11 @@ function App() {
 
         <Header currentView={currentView} setCurrentView={setCurrentView} />
         
-        <main className="relative z-10 pt-24 pb-12 px-4 sm:px-6 lg:px-8">
+        <main 
+          className="relative z-10 pt-24 pb-12 px-4 sm:px-6 lg:px-8"
+          role="main"
+          aria-label="Main content"
+        >
           <div className="max-w-7xl mx-auto">
             <AnimatePresence mode="wait">
               <motion.div
@@ -121,31 +139,7 @@ function App() {
         <Footer />
 
         {/* Toast Notifications */}
-        <Toaster 
-          position="top-right"
-          toastOptions={{
-            duration: 4000,
-            style: {
-              background: 'rgba(17, 24, 39, 0.95)',
-              color: '#f3f4f6',
-              border: '1px solid rgba(75, 85, 99, 0.3)',
-              borderRadius: '12px',
-              backdropFilter: 'blur(12px)',
-            },
-            success: {
-              iconTheme: {
-                primary: '#10b981',
-                secondary: '#f3f4f6',
-              },
-            },
-            error: {
-              iconTheme: {
-                primary: '#ef4444',
-                secondary: '#f3f4f6',
-              },
-            },
-          }}
-        />
+        <ToastContainer toasts={toasts} onClose={removeToast} />
       </div>
     </ErrorBoundary>
   );
