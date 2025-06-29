@@ -1,8 +1,5 @@
-import { AnalysisService } from '@/services/analysis/AnalysisService';
+import { analysisService } from '@/services/analysis/AnalysisService';
 import type { AnalysisResult, AnalysisConfig, RiskLevel } from '@/types';
-
-// Create singleton instance
-const analysisService = new AnalysisService();
 
 /**
  * Main analysis function - wrapper around AnalysisService
@@ -48,4 +45,15 @@ export function getRiskGradient(riskLevel: RiskLevel): string {
     EXTREME: 'from-red-600/20 to-red-700/20',
   };
   return gradients[riskLevel];
+}
+
+export function getRiskBadgeColor(riskLevel: RiskLevel): string {
+  const colors = {
+    SAFE: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+    MILD: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+    MODERATE: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
+    HIGH: 'bg-red-500/20 text-red-400 border-red-500/30',
+    EXTREME: 'bg-red-600/20 text-red-600 border-red-600/30',
+  };
+  return colors[riskLevel];
 }
