@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Loader2, Zap, Flame } from 'lucide-react';
-import { cn } from '@/utils/cn';
+import { cn } from '@/lib/utils';
 
 interface LoadingSpinnerProps {
   size?: 'sm' | 'md' | 'lg';
@@ -40,11 +40,12 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   const { icon: Icon, className: variantClass } = variants[variant];
 
   return (
-    <div className={cn('flex items-center justify-center', className)}>
+    <div className={cn('flex items-center justify-center', className)} role="status" aria-live="polite">
       <div className="flex flex-col items-center space-y-2">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+          aria-hidden="true"
         >
           <Icon className={cn(sizeClasses[size], variantClass)} />
         </motion.div>
@@ -59,6 +60,7 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
           </motion.p>
         )}
       </div>
+      <span className="sr-only">{text || 'Loading...'}</span>
     </div>
   );
 };

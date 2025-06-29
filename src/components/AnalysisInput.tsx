@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/Badge';
 import { RoastGenerator } from '@/components/RoastGenerator';
 import { cn } from '@/lib/utils';
 import { useStore } from '@/store/useStore';
+import toast from 'react-hot-toast';
 
 export const AnalysisInput: React.FC = () => {
   const [text, setText] = useState('');
@@ -28,7 +29,14 @@ export const AnalysisInput: React.FC = () => {
 
   const handleAnalyze = async () => {
     if (!isValid || isAnalyzing) return;
-    await analyze(text);
+    
+    try {
+      await analyze(text);
+      toast.success('Analysis complete!');
+    } catch (error) {
+      toast.error('Analysis failed. Please try again.');
+      console.error('Analysis error:', error);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -44,8 +52,14 @@ export const AnalysisInput: React.FC = () => {
       reader.onload = (e) => {
         const content = e.target?.result as string;
         setText(content.slice(0, 2000)); // Limit to 2000 chars
+        toast.success('File uploaded successfully!');
+      };
+      reader.onerror = () => {
+        toast.error('Failed to read file');
       };
       reader.readAsText(file);
+    } else {
+      toast.error('Please upload a text file (.txt)');
     }
   };
 
@@ -58,6 +72,15 @@ export const AnalysisInput: React.FC = () => {
     
     if (textFile) {
       handleFileUpload(textFile);
+    } else {
+      toast.error('Please drop a text file');
+    }
+  };
+
+  const handleVoiceToggle = () => {
+    setIsRecording(!isRecording);
+    if (!isRecording) {
+      toast.info('Voice input coming soon!');
     }
   };
 
@@ -73,6 +96,7 @@ export const AnalysisInput: React.FC = () => {
   const handleExampleClick = (example: string) => {
     setText(example);
     textareaRef.current?.focus();
+    toast.success('Example loaded!');
   };
 
   // Auto-resize textarea
@@ -137,16 +161,23 @@ export const AnalysisInput: React.FC = () => {
               )}
               maxLength={2000}
               disabled={isAnalyzing}
+              aria-label="Text to analyze"
+              aria-describedby="char-count word-count"
             />
             
             {/* Character/Word Count */}
             <div className="absolute bottom-3 right-3 flex items-center space-x-3 text-xs">
-              <Badge variant={wordCount > 50 ? 'warning' : 'default'} size="sm">
+              <Badge 
+                variant={wordCount > 50 ? 'warning' : 'default'} 
+                size="sm"
+                id="word-count"
+              >
                 {wordCount} words
               </Badge>
               <Badge 
                 variant={charCount > 1500 ? 'danger' : charCount > 1000 ? 'warning' : 'default'} 
                 size="sm"
+                id="char-count"
               >
                 {charCount}/2000
               </Badge>
@@ -178,6 +209,7 @@ export const AnalysisInput: React.FC = () => {
               loading={isAnalyzing}
               className="flex-1"
               size="lg"
+              aria-label={isAnalyzing ? 'Analyzing text' : 'Analyze cancel risk'}
             >
               {isAnalyzing ? (
                 <>
@@ -197,6 +229,8 @@ export const AnalysisInput: React.FC = () => {
               onClick={() => setShowRoastGenerator(!showRoastGenerator)}
               variant={showRoastGenerator ? "primary" : "secondary"}
               disabled={!isValid}
+              aria-label={showRoastGenerator ? 'Hide roast generator' : 'Show roast generator'}
+              aria-expanded={showRoastGenerator}
             >
               <Zap className="h-5 w-5 mr-2" />
               {showRoastGenerator ? 'Hide Roaster' : 'Get Roasted'}
@@ -207,19 +241,22 @@ export const AnalysisInput: React.FC = () => {
               variant="secondary"
               onClick={() => fileInputRef.current?.click()}
               disabled={isAnalyzing}
+              aria-label="Upload text file"
             >
               <Upload className="h-5 w-5 mr-2" />
               Upload
             </Button>
 
-            {/* Voice Input Button (Future Feature) */}
+            {/* Voice Input Button */}
             <Button
               variant="ghost"
-              onClick={() => setIsRecording(!isRecording)}
+              onClick={handleVoiceToggle}
               disabled={isAnalyzing}
               className={cn(
                 isRecording && "bg-red-500/20 text-red-400 border-red-500/30"
               )}
+              aria-label={isRecording ? 'Stop voice recording' : 'Start voice recording'}
+              aria-pressed={isRecording}
             >
               {isRecording ? (
                 <MicOff className="h-5 w-5" />
@@ -237,6 +274,8 @@ export const AnalysisInput: React.FC = () => {
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
                 className="flex items-center space-x-2 text-yellow-400 text-sm"
+                role="alert"
+                aria-live="polite"
               >
                 <AlertTriangle className="h-4 w-4" />
                 <span>Enter at least 10 characters for analysis</span>
@@ -272,12 +311,13 @@ export const AnalysisInput: React.FC = () => {
               <motion.button
                 key={index}
                 onClick={() => handleExampleClick(example)}
-                className="text-left p-4 bg-gray-800/30 hover:bg-gray-700/50 rounded-lg text-sm text-gray-300 hover:text-white transition-all duration-300 border border-gray-800 hover:border-gray-600"
+                className="text-left p-4 bg-gray-800/30 hover:bg-gray-700/50 rounded-lg text-sm text-gray-300 hover:text-white transition-all duration-300 border border-gray-800 hover:border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500"
                 whileHover={{ scale: 1.02, y: -2 }}
                 whileTap={{ scale: 0.98 }}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 + index * 0.1 }}
+                aria-label={`Load example: ${example}`}
               >
                 <span className="text-purple-400 text-xs font-medium mb-1 block">
                   EXAMPLE {index + 1}
@@ -298,6 +338,7 @@ export const AnalysisInput: React.FC = () => {
             if (file) handleFileUpload(file);
           }}
           className="hidden"
+          aria-label="Upload text file"
         />
       </Card>
 

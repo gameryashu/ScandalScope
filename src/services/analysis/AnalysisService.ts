@@ -310,27 +310,37 @@ export class AnalysisServiceImpl implements AnalysisService {
       SAFE: [
         "Playing it safe, I see. Your controversy level is about as spicy as vanilla ice cream. 🍦",
         "This post is so wholesome, it could be a greeting card. Bless your heart! 💝",
-        "Congratulations on achieving peak 'won't offend anyone' energy! 😇"
+        "Congratulations on achieving peak 'won't offend anyone' energy! 😇",
+        "Your take is safer than a playground with rubber floors and foam walls. 🛡️",
+        "This has 'I asked my mom to proofread my tweet' energy. Adorable! 👵"
       ],
       MILD: [
         "Ooh, someone's feeling a little spicy today! Still safer than a playground though. 🌶️",
         "This has 'I want to be edgy but also keep my job' vibes. Respect the balance! ⚖️",
-        "Dipping your toes in controversy like it's a cold pool. Adorable! 🏊‍♀️"
+        "Dipping your toes in controversy like it's a cold pool. Adorable! 🏊‍♀️",
+        "Your rebellious phase called - it wants its training wheels back. 🚲",
+        "This is the social media equivalent of ordering mild salsa. Bold choice! 🌮"
       ],
       MODERATE: [
         "Now we're cooking with gas! Still not quite 'cancel-worthy' but getting warmer. 🔥",
         "This post has 'main character energy' but in a 'side quest' kind of way. 🎮",
-        "You're walking the line between spicy and problematic. Tightrope skills! 🎪"
+        "You're walking the line between spicy and problematic. Tightrope skills! 🎪",
+        "Your controversy meter is at 'family dinner argument' level. Impressive! 🍽️",
+        "This has 'I'm feeling dangerous today' energy but make it suburban. 🏘️"
       ],
       HIGH: [
         "Yikes! Someone woke up and chose chaos today. Twitter fingers activated! 📱💥",
         "This post has 'trending for the wrong reasons' potential. Buckle up! 🎢",
-        "Bold strategy, Cotton. Let's see if it pays off or if you need that apology template. 🎯"
+        "Bold strategy, Cotton. Let's see if it pays off or if you need that apology template. 🎯",
+        "Your publicist just felt a disturbance in the force. Hope they're on speed dial! 📞",
+        "This has 'emergency PR meeting' written all over it. RIP your mentions! ⚰️"
       ],
       EXTREME: [
         "WHOA! This post is spicier than a ghost pepper eating contest! 🌶️🔥",
         "Someone's really testing the limits of social media today. RIP mentions! ⚰️",
-        "This has 'emergency PR meeting' written all over it. Hope you have good lawyers! ⚖️💼"
+        "This has 'emergency PR meeting' written all over it. Hope you have good lawyers! ⚖️💼",
+        "Your post just broke the controversy scale. Scientists are baffled! 🔬",
+        "This is so spicy, it needs its own hazmat warning label. Godspeed! ☢️"
       ]
     };
     

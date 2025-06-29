@@ -14,7 +14,8 @@ import {
   Clock,
   Target,
   Zap,
-  RefreshCw
+  RefreshCw,
+  CheckCircle
 } from 'lucide-react';
 import { useCurrentAnalysis, useStore } from '@/store/useStore';
 import { getRiskColor, getRiskBgColor, getRiskGradient } from '@/utils/analysis';
@@ -24,17 +25,17 @@ import { Progress } from '@/components/ui/Progress';
 import { Badge } from '@/components/ui/Badge';
 import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { useAnalysis } from '@/hooks/useAnalysis';
-import { useToast } from '@/hooks/useToast';
 import { cn } from '@/lib/utils';
 import Confetti from 'react-confetti';
+import toast from 'react-hot-toast';
 
 export const AnalysisResult: React.FC = () => {
   const currentAnalysis = useCurrentAnalysis();
   const { showConfetti, setShowConfetti } = useStore();
   const { analyze } = useAnalysis();
-  const { success: showSuccess, error: showError } = useToast();
   const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
   const [isRegenerating, setIsRegenerating] = useState(false);
+  const [copiedItem, setCopiedItem] = useState<string | null>(null);
 
   useEffect(() => {
     const updateWindowSize = () => {
@@ -71,9 +72,11 @@ export const AnalysisResult: React.FC = () => {
   const copyToClipboard = async (text: string, type: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      showSuccess(`${type} copied to clipboard!`);
+      setCopiedItem(type);
+      toast.success(`${type} copied to clipboard!`);
+      setTimeout(() => setCopiedItem(null), 2000);
     } catch (error) {
-      showError('Failed to copy to clipboard');
+      toast.error('Failed to copy to clipboard');
     }
   };
 
@@ -116,7 +119,7 @@ export const AnalysisResult: React.FC = () => {
     a.click();
     URL.revokeObjectURL(url);
     
-    showSuccess('Analysis downloaded successfully!');
+    toast.success('Analysis downloaded successfully!');
   };
 
   const handleTryAgain = async () => {
@@ -125,9 +128,9 @@ export const AnalysisResult: React.FC = () => {
     setIsRegenerating(true);
     try {
       await analyze(text);
-      showSuccess('Analysis regenerated!');
+      toast.success('Analysis regenerated!');
     } catch (error) {
-      showError('Failed to regenerate analysis');
+      toast.error('Failed to regenerate analysis');
     } finally {
       setIsRegenerating(false);
     }
@@ -251,6 +254,7 @@ export const AnalysisResult: React.FC = () => {
               disabled={isRegenerating}
               variant="primary"
               className="flex items-center space-x-2"
+              aria-label="Regenerate analysis"
             >
               {isRegenerating ? (
                 <LoadingSpinner size="sm" />
@@ -264,6 +268,7 @@ export const AnalysisResult: React.FC = () => {
               onClick={shareResult}
               variant="secondary"
               className="flex items-center space-x-2"
+              aria-label="Share results"
             >
               <Share2 className="h-4 w-4" />
               <span>Share</span>
@@ -273,8 +278,13 @@ export const AnalysisResult: React.FC = () => {
               onClick={() => copyToClipboard(`Cancel Risk Score: ${cancelScore}/100 (${riskLevel})`, 'Score')}
               variant="secondary"
               className="flex items-center space-x-2"
+              aria-label="Copy score to clipboard"
             >
-              <Copy className="h-4 w-4" />
+              {copiedItem === 'Score' ? (
+                <CheckCircle className="h-4 w-4 text-green-400" />
+              ) : (
+                <Copy className="h-4 w-4" />
+              )}
               <span>Copy Score</span>
             </Button>
 
@@ -282,6 +292,7 @@ export const AnalysisResult: React.FC = () => {
               onClick={downloadResult}
               variant="ghost"
               className="flex items-center space-x-2"
+              aria-label="Download analysis results"
             >
               <Download className="h-4 w-4" />
               <span>Download</span>
@@ -314,8 +325,13 @@ export const AnalysisResult: React.FC = () => {
               variant="ghost"
               size="sm"
               className="text-red-400 hover:text-red-300"
+              aria-label="Copy roast to clipboard"
             >
-              <Copy className="h-3 w-3 mr-1" />
+              {copiedItem === 'Roast' ? (
+                <CheckCircle className="h-3 w-3 mr-1 text-green-400" />
+              ) : (
+                <Copy className="h-3 w-3 mr-1" />
+              )}
               Copy roast
             </Button>
           </div>
@@ -352,6 +368,7 @@ export const AnalysisResult: React.FC = () => {
                 value={score}
                 color={getProgressColor(score)}
                 className="h-2"
+                aria-label={`${category} score: ${Math.round(score)}%`}
               />
             </motion.div>
           ))}
@@ -401,8 +418,13 @@ export const AnalysisResult: React.FC = () => {
                 onClick={() => copyToClipboard(apology, 'Apology')}
                 variant="secondary"
                 className="flex items-center space-x-2"
+                aria-label="Copy apology to clipboard"
               >
-                <Copy className="h-4 w-4" />
+                {copiedItem === 'Apology' ? (
+                  <CheckCircle className="h-4 w-4 text-green-400" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
                 <span>Copy Apology</span>
               </Button>
             </Card>
