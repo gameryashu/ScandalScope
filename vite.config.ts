@@ -7,16 +7,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, './src'),
-      '@/components': resolve(__dirname, './src/components'),
-      '@/utils': resolve(__dirname, './src/utils'),
-      '@/store': resolve(__dirname, './src/store'),
-      '@/types': resolve(__dirname, './src/types'),
-      '@/hooks': resolve(__dirname, './src/hooks'),
-      '@/lib': resolve(__dirname, './src/lib'),
     },
-  },
-  optimizeDeps: {
-    exclude: ['lucide-react'],
   },
   build: {
     target: 'esnext',
@@ -27,7 +18,7 @@ export default defineConfig({
         manualChunks: {
           vendor: ['react', 'react-dom'],
           ui: ['framer-motion', 'lucide-react'],
-          charts: ['recharts'],
+          utils: ['clsx', 'tailwind-merge'],
         },
       },
     },

@@ -1,18 +1,7 @@
-import { analysisService } from '@/services/analysis/AnalysisService';
-import type { AnalysisResult, AnalysisConfig, RiskLevel } from '@/types';
+import type { RiskLevel } from '@/types';
 
 /**
- * Main analysis function - wrapper around AnalysisService
- */
-export async function analyzeText(
-  text: string, 
-  config?: Partial<AnalysisConfig>
-): Promise<AnalysisResult> {
-  return analysisService.analyzeText(text, config);
-}
-
-/**
- * Utility functions for UI components
+ * Utility functions for analysis UI components
  */
 export function getRiskColor(riskLevel: RiskLevel): string {
   const colors = {
