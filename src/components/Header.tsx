@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Flame, Moon, Sun, User, Trophy, History, Menu, X } from 'lucide-react';
+import { Flame, Moon, Sun, Home, Trophy, History, Menu, X } from 'lucide-react';
 import { useStore } from '@/store/useStore';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
@@ -11,7 +11,7 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView }) => {
-  const { theme, setTheme, user, sidebarOpen, toggleSidebar } = useStore();
+  const { theme, setTheme } = useStore();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
 
   const toggleTheme = () => {
@@ -19,7 +19,7 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView }) =
   };
 
   const navigationItems = [
-    { id: 'home', label: 'Analyze', icon: Flame },
+    { id: 'home', label: 'Analyze', icon: Home },
     { id: 'leaderboard', label: 'Leaderboard', icon: Trophy },
     { id: 'history', label: 'History', icon: History },
   ];
@@ -33,7 +33,7 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView }) =
     <motion.header 
       initial={{ y: -100 }}
       animate={{ y: 0 }}
-      className="fixed top-0 left-0 right-0 z-50 glass-dark border-b border-white/10"
+      className="fixed top-0 left-0 right-0 z-50 bg-gray-900/80 backdrop-blur-xl border-b border-gray-800/50"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
@@ -53,8 +53,10 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView }) =
               />
             </div>
             <div>
-              <h1 className="text-xl font-bold gradient-text">ScandalScope</h1>
-              <p className="text-xs text-gray-400 -mt-1">Cancel Risk Analyzer</p>
+              <h1 className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                ScandalScope
+              </h1>
+              <p className="text-xs text-gray-400 -mt-1">V2.0</p>
             </div>
           </motion.div>
 
@@ -79,7 +81,7 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView }) =
             ))}
           </nav>
 
-          {/* User Actions */}
+          {/* Actions */}
           <div className="flex items-center space-x-4">
             {/* Theme Toggle */}
             <motion.button
@@ -96,34 +98,6 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView }) =
               )}
             </motion.button>
 
-            {/* User Profile */}
-            {user ? (
-              <motion.div 
-                className="hidden sm:flex items-center space-x-3 bg-gray-700/50 rounded-lg px-3 py-2"
-                whileHover={{ scale: 1.05 }}
-              >
-                <img 
-                  src={user.avatar} 
-                  alt={user.username}
-                  className="h-8 w-8 rounded-full"
-                />
-                <div>
-                  <p className="text-sm font-medium text-white">{user.username}</p>
-                  <p className="text-xs text-gray-400">Score: {user.averageScore}</p>
-                </div>
-              </motion.div>
-            ) : (
-              <Button
-                onClick={() => setCurrentView('profile')}
-                variant="primary"
-                size="sm"
-                className="hidden sm:flex items-center space-x-2"
-              >
-                <User className="h-4 w-4" />
-                <span>Sign In</span>
-              </Button>
-            )}
-
             {/* Mobile Menu Toggle */}
             <motion.button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -131,7 +105,6 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView }) =
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               aria-label="Toggle mobile menu"
-              data-testid="mobile-header"
             >
               {isMobileMenuOpen ? (
                 <X className="h-5 w-5 text-gray-300" />
@@ -170,19 +143,6 @@ export const Header: React.FC<HeaderProps> = ({ currentView, setCurrentView }) =
                 <span className="font-medium">{label}</span>
               </motion.button>
             ))}
-            
-            {/* Mobile User Section */}
-            {!user && (
-              <motion.button
-                onClick={() => handleNavClick('profile')}
-                className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-300 hover:text-white hover:bg-gray-700/50 transition-all duration-300"
-                whileHover={{ x: 4 }}
-                whileTap={{ scale: 0.98 }}
-              >
-                <User className="h-5 w-5" />
-                <span className="font-medium">Sign In</span>
-              </motion.button>
-            )}
           </div>
         </motion.div>
       </div>

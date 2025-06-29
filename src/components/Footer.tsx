@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Heart, Github, Twitter, Coffee } from 'lucide-react';
+import { Heart, Github, Twitter, Coffee, Zap } from 'lucide-react';
 
 export const Footer: React.FC = () => {
   return (
@@ -13,7 +13,12 @@ export const Footer: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="col-span-1 md:col-span-2">
-            <h3 className="text-xl font-bold gradient-text mb-4">ScandalScope</h3>
+            <div className="flex items-center space-x-3 mb-4">
+              <Zap className="h-6 w-6 text-purple-500" />
+              <h3 className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                ScandalScope V2
+              </h3>
+            </div>
             <p className="text-gray-400 mb-4 max-w-md">
               The ultimate AI-powered cancel risk analyzer. Get roasted, get real, get ready for the internet's judgment.
             </p>
@@ -51,8 +56,8 @@ export const Footer: React.FC = () => {
             <ul className="space-y-2 text-gray-400">
               <li><a href="#" className="hover:text-white transition-colors">Cancel Risk Analysis</a></li>
               <li><a href="#" className="hover:text-white transition-colors">AI Roast Generator</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Apology Templates</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Risk Leaderboard</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Smart Recommendations</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Performance Analytics</a></li>
             </ul>
           </div>
 
@@ -70,12 +75,12 @@ export const Footer: React.FC = () => {
 
         <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-gray-400 text-sm">
-            © 2024 ScandalScope. All rights reserved. Use responsibly.
+            © 2024 ScandalScope V2. All rights reserved. Use responsibly.
           </p>
           <div className="flex items-center space-x-1 text-gray-400 text-sm mt-4 md:mt-0">
             <span>Made with</span>
             <Heart className="h-4 w-4 text-purple-400" />
-            <span>and a lot of controversy</span>
+            <span>and a lot of AI magic</span>
           </div>
         </div>
       </div>

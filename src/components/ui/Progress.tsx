@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { cn } from '@/utils/cn';
+import { cn } from '@/lib/utils';
 
 interface ProgressProps {
   value: number;
@@ -30,13 +30,13 @@ export const Progress: React.FC<ProgressProps> = ({
 
   return (
     <div className={cn('w-full', className)}>
-      <div className="flex items-center justify-between mb-1">
-        {showValue && (
+      {showValue && (
+        <div className="flex items-center justify-between mb-1">
           <span className="text-sm font-medium text-gray-300">
             {Math.round(percentage)}%
           </span>
-        )}
-      </div>
+        </div>
+      )}
       <div className="w-full bg-gray-800 rounded-full h-2 overflow-hidden">
         <motion.div
           className={cn('h-full rounded-full', colors[color])}

@@ -17,21 +17,20 @@ import {
   RefreshCw,
   CheckCircle
 } from 'lucide-react';
-import { useCurrentAnalysis, useStore } from '@/store/useStore';
+import { useStore } from '@/store/useStore';
 import { getRiskColor, getRiskBgColor, getRiskGradient } from '@/utils/analysis';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Progress } from '@/components/ui/Progress';
 import { Badge } from '@/components/ui/Badge';
-import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { RiskMeter } from '@/components/analysis/RiskMeter';
 import { useAnalysis } from '@/hooks/useAnalysis';
 import { cn } from '@/lib/utils';
 import Confetti from 'react-confetti';
 import toast from 'react-hot-toast';
 
 export const AnalysisResult: React.FC = () => {
-  const currentAnalysis = useCurrentAnalysis();
-  const { showConfetti, setShowConfetti } = useStore();
+  const { currentAnalysis, showConfetti, setShowConfetti } = useStore();
   const { analyze } = useAnalysis();
   const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
   const [isRegenerating, setIsRegenerating] = useState(false);
@@ -136,26 +135,6 @@ export const AnalysisResult: React.FC = () => {
     }
   };
 
-  const getRiskIcon = () => {
-    const iconClass = "h-8 w-8";
-    switch (riskLevel) {
-      case 'SAFE': return <Shield className={cn(iconClass, "text-emerald-400")} />;
-      case 'MILD': return <TrendingUp className={cn(iconClass, "text-yellow-400")} />;
-      case 'MODERATE': return <AlertTriangle className={cn(iconClass, "text-orange-400")} />;
-      case 'HIGH': return <Flame className={cn(iconClass, "text-red-400")} />;
-      case 'EXTREME': return <Flame className={cn(iconClass, "text-red-600 animate-pulse")} />;
-      default: return <BarChart3 className={cn(iconClass, "text-gray-400")} />;
-    }
-  };
-
-  const getScoreColor = (score: number) => {
-    if (score < 20) return 'text-emerald-400';
-    if (score < 40) return 'text-yellow-400';
-    if (score < 60) return 'text-orange-400';
-    if (score < 80) return 'text-red-400';
-    return 'text-red-600';
-  };
-
   const getProgressColor = (score: number): 'success' | 'warning' | 'danger' => {
     if (score < 40) return 'success';
     if (score < 70) return 'warning';
@@ -166,7 +145,7 @@ export const AnalysisResult: React.FC = () => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="w-full max-w-4xl mx-auto space-y-6"
+      className="w-full max-w-4xl mx-auto space-y-8"
       data-testid="analysis-result"
     >
       {showConfetti && (
@@ -183,65 +162,28 @@ export const AnalysisResult: React.FC = () => {
       <Card 
         className={cn(
           "text-center relative overflow-hidden",
-          `bg-gradient-to-br ${getRiskGradient(riskLevel)}`,
           riskLevel === 'EXTREME' && "animate-pulse border-red-500/50"
         )}
         gradient
       >
-        {/* Animated Background */}
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-red-500/20 animate-gradient-x" />
-        </div>
-
         <div className="relative z-10">
-          {/* Risk Icon */}
-          <motion.div
-            className="flex items-center justify-center mb-6"
-            initial={{ scale: 0, rotate: -180 }}
-            animate={{ scale: 1, rotate: 0 }}
-            transition={{ delay: 0.2, type: "spring", stiffness: 300 }}
-          >
-            {getRiskIcon()}
-          </motion.div>
-          
-          {/* Score Display */}
-          <motion.div
-            className={cn("text-7xl font-bold mb-4", getScoreColor(cancelScore))}
-            initial={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.3, type: "spring", stiffness: 200 }}
-            data-testid="cancel-score"
-          >
-            {cancelScore}
-          </motion.div>
-          
-          <div className="text-2xl font-semibold text-white mb-4">
-            Cancel Risk Score
-          </div>
-          
-          {/* Risk Level Badge */}
+          {/* Risk Meter */}
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            transition={{ delay: 0.4, type: "spring" }}
-            className="mb-6"
+            transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+            className="mb-8"
           >
-            <Badge 
-              variant={riskLevel === 'SAFE' ? 'success' : riskLevel === 'EXTREME' ? 'danger' : 'warning'}
-              size="lg"
-              className="text-lg font-bold px-6 py-2"
-            >
-              {riskLevel} RISK
-            </Badge>
+            <RiskMeter score={cancelScore} animated />
           </motion.div>
 
           {/* Confidence & Processing Time */}
-          <div className="flex justify-center space-x-6 mb-6 text-sm text-gray-400">
-            <div className="flex items-center space-x-1">
+          <div className="flex justify-center space-x-8 mb-6 text-sm text-gray-400">
+            <div className="flex items-center space-x-2">
               <Target className="h-4 w-4" />
               <span>{Math.round(confidence * 100)}% confidence</span>
             </div>
-            <div className="flex items-center space-x-1">
+            <div className="flex items-center space-x-2">
               <Clock className="h-4 w-4" />
               <span>{processingTime}ms</span>
             </div>
@@ -257,7 +199,9 @@ export const AnalysisResult: React.FC = () => {
               aria-label="Regenerate analysis"
             >
               {isRegenerating ? (
-                <LoadingSpinner size="sm" />
+                <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }}>
+                  <RefreshCw className="h-4 w-4" />
+                </motion.div>
               ) : (
                 <RefreshCw className="h-4 w-4" />
               )}
@@ -348,7 +292,7 @@ export const AnalysisResult: React.FC = () => {
           {Object.entries(categories).map(([category, score], index) => (
             <motion.div
               key={category}
-              className="space-y-2"
+              className="space-y-3"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.7 + index * 0.1 }}

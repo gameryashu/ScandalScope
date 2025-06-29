@@ -30,7 +30,7 @@ export class ErrorBoundary extends Component<Props, State> {
     // Log error to monitoring service
     console.error('Error caught by boundary:', error, errorInfo);
     
-    // Send to error tracking service (e.g., Sentry)
+    // Send to analytics
     if (typeof window !== 'undefined' && window.gtag) {
       window.gtag('event', 'exception', {
         description: error.message,
@@ -54,7 +54,7 @@ export class ErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center p-4">
+        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 flex items-center justify-center p-4">
           <Card className="max-w-md w-full text-center">
             <div className="mb-6">
               <AlertTriangle className="h-16 w-16 text-red-400 mx-auto mb-4" />
@@ -110,18 +110,4 @@ export class ErrorBoundary extends Component<Props, State> {
 
     return this.props.children;
   }
-}
-
-// HOC for wrapping components with error boundary
-export function withErrorBoundary<P extends object>(
-  Component: React.ComponentType<P>,
-  fallback?: ReactNode
-) {
-  return function WrappedComponent(props: P) {
-    return (
-      <ErrorBoundary fallback={fallback}>
-        <Component {...props} />
-      </ErrorBoundary>
-    );
-  };
 }

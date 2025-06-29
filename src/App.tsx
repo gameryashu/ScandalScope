@@ -1,54 +1,56 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { Header } from '@/components/Header';
 import { AnalysisInput } from '@/components/AnalysisInput';
 import { AnalysisResult } from '@/components/AnalysisResult';
-import { Leaderboard } from '@/components/Leaderboard';
-import { History } from '@/components/History';
 import { Footer } from '@/components/Footer';
-import { ToastContainer } from '@/components/ui/Toast';
-import { useStore, useCurrentAnalysis, useTheme } from '@/store/useStore';
-import { useToast } from '@/hooks/useToast';
-import { ScreenReader } from '@/utils/accessibility';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
+import { useStore } from '@/store/useStore';
+import { initializePerformanceMonitoring } from '@/utils/performance';
+import { Toaster } from 'react-hot-toast';
+
+// Lazy load heavy components
+const Leaderboard = React.lazy(() => import('@/components/Leaderboard'));
+const History = React.lazy(() => import('@/components/History'));
 
 function App() {
+  const { currentAnalysis, theme, setTheme } = useStore();
   const [currentView, setCurrentView] = React.useState('home');
-  const currentAnalysis = useCurrentAnalysis();
-  const theme = useTheme();
-  const { toasts, removeToast } = useToast();
 
   useEffect(() => {
-    // Apply theme to document
+    // Initialize performance monitoring
+    initializePerformanceMonitoring();
+
+    // Apply theme
     const root = document.documentElement;
     if (theme === 'dark') {
       root.classList.add('dark');
-    } else if (theme === 'light') {
-      root.classList.remove('dark');
     } else {
-      // Auto theme based on system preference
+      root.classList.remove('dark');
+    }
+
+    // System theme detection
+    if (theme === 'auto') {
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       root.classList.toggle('dark', prefersDark);
     }
   }, [theme]);
 
-  // Announce view changes to screen readers
-  useEffect(() => {
-    const viewNames = {
-      home: 'Analysis page',
-      leaderboard: 'Leaderboard page',
-      history: 'History page',
-    };
-    
-    ScreenReader.announce(`Navigated to ${viewNames[currentView as keyof typeof viewNames] || currentView}`);
-  }, [currentView]);
-
   const renderContent = () => {
     switch (currentView) {
       case 'leaderboard':
-        return <Leaderboard />;
+        return (
+          <Suspense fallback={<LoadingSpinner size="lg" text="Loading leaderboard..." />}>
+            <Leaderboard />
+          </Suspense>
+        );
       case 'history':
-        return <History />;
+        return (
+          <Suspense fallback={<LoadingSpinner size="lg" text="Loading history..." />}>
+            <History />
+          </Suspense>
+        );
       default:
         return (
           <div className="space-y-8">
@@ -73,7 +75,7 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 relative overflow-hidden">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 relative overflow-hidden">
         {/* Animated Background Effects */}
         <div className="fixed inset-0 overflow-hidden pointer-events-none">
           <motion.div 
@@ -100,18 +102,6 @@ function App() {
               ease: "easeInOut" 
             }}
           />
-          <motion.div 
-            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl"
-            animate={{ 
-              rotate: [0, 360],
-              scale: [1, 1.1, 1]
-            }}
-            transition={{ 
-              duration: 20, 
-              repeat: Infinity, 
-              ease: "linear" 
-            }}
-          />
         </div>
 
         <Header currentView={currentView} setCurrentView={setCurrentView} />
@@ -121,7 +111,7 @@ function App() {
           role="main"
           aria-label="Main content"
         >
-          <div className="max-w-7xl mx-auto">
+          <div className="max-w-4xl mx-auto">
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentView}
@@ -139,7 +129,29 @@ function App() {
         <Footer />
 
         {/* Toast Notifications */}
-        <ToastContainer toasts={toasts} onClose={removeToast} />
+        <Toaster 
+          position="top-right"
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: '#1e293b',
+              color: '#f1f5f9',
+              border: '1px solid #334155',
+            },
+            success: {
+              iconTheme: {
+                primary: '#10b981',
+                secondary: '#ffffff',
+              },
+            },
+            error: {
+              iconTheme: {
+                primary: '#ef4444',
+                secondary: '#ffffff',
+              },
+            },
+          }}
+        />
       </div>
     </ErrorBoundary>
   );

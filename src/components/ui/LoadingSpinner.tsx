@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 
 interface LoadingSpinnerProps {
   size?: 'sm' | 'md' | 'lg';
-  variant?: 'default' | 'roast' | 'analysis';
+  variant?: 'default' | 'analysis' | 'roast';
   className?: string;
   text?: string;
 }
@@ -21,13 +21,13 @@ const variants = {
     icon: Loader2,
     className: 'text-purple-400',
   },
-  roast: {
-    icon: Flame,
-    className: 'text-orange-400',
-  },
   analysis: {
     icon: Zap,
     className: 'text-blue-400',
+  },
+  roast: {
+    icon: Flame,
+    className: 'text-orange-400',
   },
 };
 
@@ -62,24 +62,5 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
       </div>
       <span className="sr-only">{text || 'Loading...'}</span>
     </div>
-  );
-};
-
-export const LoadingOverlay: React.FC<{
-  isVisible: boolean;
-  text?: string;
-  variant?: LoadingSpinnerProps['variant'];
-}> = ({ isVisible, text, variant }) => {
-  if (!isVisible) return null;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="absolute inset-0 bg-gray-900/50 backdrop-blur-sm flex items-center justify-center z-10 rounded-xl"
-    >
-      <LoadingSpinner size="lg" variant={variant} text={text} />
-    </motion.div>
   );
 };
